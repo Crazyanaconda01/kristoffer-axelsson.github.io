@@ -18,7 +18,7 @@ Install-Package Swashbuckle.OData -Version 3.5.0
 Since this is a .Net Core project, the services needs to be added and configured.
 The APIs in question are of course versioned, so the OData operations should be too of course. Versioning the OData feeds can be a tricky endeavour, but this great guide by Chris Martinez https://github.com/microsoft/aspnet-api-versioning/wiki/API-Versioning-with-OData helped greatly, making me ending with the following configuration in Startup.cs. Only including code relevant for OData and the versioning of it.
 (The order is important when adding services to the IServiceCollection in Startup.cs, AddMvc needs to be above the Addition of services.AddOData, otherwise you can get various errors.)
-...ConfigureServices:
+ConfigureServices:
             services.AddMvc();
             services.AddApiVersioning(options => options.ReportApiVersions = true);
             services.AddOData().EnableApiVersioning();
@@ -61,7 +61,7 @@ The APIs in question are of course versioned, so the OData operations should be 
                 });
 
 To avoid errors when Swashbuckle tries to generate the API documentation, we need to explicitly specify the OData MIME types as supported media types when adding MvcCore to the IServiceCollection.
-...            // Workaround: https://github.com/OData/WebApi/issues/1177
+            // Workaround: https://github.com/OData/WebApi/issues/1177
             services.AddMvcCore(options =>
             {
                 foreach (var outputFormatter in options.OutputFormatters.OfType<ODataOutputFormatter>().Where(_ => _.SupportedMediaTypes.Count == 0))
