@@ -1,4 +1,4 @@
-# Part 1: Setting up an Odata feed in .Net Core
+## Part 1: Setting up an Odata feed in .Net Core
 
 ### Options:
 There are a few frameworks available that can be used for this purpose, one of them being RESTier. But after agreeing on a “cloud native Azure centric” approach together with the client, and since we decided to develop the backend with the LTS supported .Net Core 2.1, I felt that a framework published by Microsoft was the preferable way to go if there was nothing talking against it.
