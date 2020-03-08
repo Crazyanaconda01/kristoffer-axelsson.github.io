@@ -12,6 +12,4 @@ Posts:
 
 [How to add custom properties in your B2CAAD issued access token using Custom Policies](https://kristoffer-axelsson.github.io/how-to-add-custom-properties-in-your-B2CAAD-issued-access-tokens-using-custom-policies)
 
-[Posts](https://kristoffer-axelsson.github.io/posts)
-
 [About me](https://kristoffer-axelsson.github.io/about)
