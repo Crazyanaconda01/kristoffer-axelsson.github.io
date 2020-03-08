@@ -5,6 +5,8 @@ The business case of the client was to offer the same or similar anaytlical capa
 
 Part 1: Setting up an Odata feed in .Net Core
 
+[Part 1: Setting up an Odata feed in .Net Core](https://kristoffer-axelsson.github.io/implementing-odata-feeds-in-using-azure-api-management-net-core-kubernetes-and-b2caad/part-1-setting-up-an-odata-feed-in-net-core)
+
 Part 2: SEtting up internal authentication
 
 Part 3: Setting up external authentication
