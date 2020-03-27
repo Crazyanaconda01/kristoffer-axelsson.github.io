@@ -56,13 +56,42 @@ The user journey consists of eight steps. Compared to several of the B2C packs o
 
 So how can we achieve this in a B2C custom policy?
 
-A note of warning: B2C policies are for identity experience framework experts. There are no really easy way to edit the xml-formatted poilcy. There is an Azure AD B2C extenstion for VS Code https://marketplace.visualstudio.com/items?itemName=AzureADB2CTools.aadb2c that is good, but one should be aware of that the difficulty level is rather high. There are no WYSIWYG editors like there are for xslt editing for instance. And the documentation can be rather heavy but good, like this deep dive into B2C schemas that helped me in solving this http://download.microsoft.com/download/3/6/1/36187D50-A693-4547-848A-176F17AE1213/Deep%20Dive%20on%20Azure%20AD%20B2C%20Custom%20Policies/Azure%20AD%20B2C%20Custom%20Policies%20-%20Deep%20Dive%20on%20Custom%20Policy%20Schema.pdf (can also be found on docs.microsoft.com). There are of course even more higher mountains to climb out there than to work with B2C policies, but be aware that this kind of customization will require some persistance and probably an evening or two, but the results make it worth it. 
+A note of warning: B2C policies are for identity experience framework experts and for highly complex scenarios, like the ones described in this article. It's not for the faint-hearted. There are no really easy way to edit the xml-formatted poilcy. There is an Azure AD B2C extenstion for VS Code https://marketplace.visualstudio.com/items?itemName=AzureADB2CTools.aadb2c that is good, but one should be aware of that the difficulty level is rather high. There are no WYSIWYG editors like there are for xslt editing for instance. And the documentation can be rather heavy but good, like this deep dive into B2C schemas that helped me in solving this http://download.microsoft.com/download/3/6/1/36187D50-A693-4547-848A-176F17AE1213/Deep%20Dive%20on%20Azure%20AD%20B2C%20Custom%20Policies/Azure%20AD%20B2C%20Custom%20Policies%20-%20Deep%20Dive%20on%20Custom%20Policy%20Schema.pdf (can also be found on docs.microsoft.com). There are of course even more higher mountains to climb out there than to work with B2C policies, but be aware that this kind of customization will require some persistance and probably an evening or two, but the amount of customization and results one can achieve are truly spectacular and definitely makes it worth it.
 
-The first step I looked at in achieving the optimal outcome for the desired use case was to auto sign in the user. To accomplish this I first needed to extract the email claim from the JWT token. But the token is signed with a key. So how can we decode a signed JWT token in a custom policy? 
+Let's start with looking at the actual linkage policy.
 
-It's actually rather easy. We first need to upload the 
+In there, there are a few things that are important. First we include the authentication protocol name, <Protocol Name="OpenIdConnect" />, since this is the protocol that B2C expects, without this set B2C would throw an error and we would not be able to access the claims of the token in the policy. The second important setting here is that we specify the token type, JWT. Same thing here, B2C will throw an error here as well if this isn't specified and a JWT token is passed. The third important setting here is the CryptographicKeys. Do you remermber the signing of the token? It should be uploaded in the Identity Experience Framework / Policy Keys blade of the B2C AD tenant. When adding a signture key, it should look like this:
+
+The StorageReferenceId in the custom policy will be the name of the secret you create, plus "B2C_1A" which is a prefix for custom polciies. So if you name it linksecret, the name to enter as the StorageReferenceId will be "B2C_A1_linksecret". This is all that's needed to validate the signature of the token, B2C will handle the rest. The client_secret is a static attribute.
+
+Back to the user journey. Since we now have the decoded JWT token, the email claim is accessible (to see which claims are available and sent between differents steps in user journeys I strongly suggest using the UserJourneyRecorder, debugging without it is can be very daunting) and be used to read the B2C user using AAD-UserReadUsingEmailAddress technical profile if you used the B2C start pack that can be found here. By using the client_assertion approach, we have now managed to retrieve the user within the policy without prompting the user for any action.
+
+In step 2 we verify that the user was found using the email address by veryfing that an objectId exists.
+
+In step 3 the user would normally be forced to select which IDP to connect. But there is way to get around that. In the deep dive documentation I posted previously and on docs.microsoft.com, one can see that B2C supports skipping the ClaimProviderSelection orchestration step if a query parameter is passed named "domain_hint" with a value that matches the Domain attribute of the social identity techical profile that the user is about to connect. For instance, if the you add "&domain_hint=facebook.com" and the value matches the Domain element of the Facebook technical profile, the B2C policy will automatically jump to the ClaimsExchange orchestration step which is where the user is promoted to actually sign in with the social identity account to get a key that can be stored to the userIdentites on the user object. More information about domain_hints and adapative sign in experiences in B2C custom policies can also be found here : 
+
+With the client_assertion JWT token with the authenticated user's email address in conjunction with the domain_hint stemming from the web application and matching the Domain element value of technical profile, we have now reached the desired behaviour where the user does not need to sign in twice and does not need to select the IDP again.
+
+## Adding the social identity to a local account B2C user using Graph
+There is one important step left though. We need to actually update the B2C user identity collection to add the connected social account. This can be done in different ways. Finding proved tricky back in the day, but I eventually found a Word file describing the procedure in a Github repository. The userIdentities collection can be updated by a PATCH request to the Graph API and the example described this using an Azure function. Since we already had the infrastructure setup for ingress of traffic thorugh API Management and services hosted in an AKS cluster with internal Azure load balancers, I did see the need to create a separata Azure function only to do a PATCH request to Graph and settled with simply integratiing this into the user API. (Something to consider here is that the application making the requst, in this case the user API, needs the proper Graph access i.e. read and write directory data. A more in depth look can be found here: https://docs.microsoft.com/en-us/graph/permissions-reference.)
+
+The retrieves the POST body from B2C, deserializes it and retrives the user from Graph based on the objectId of the user.
+
+And when we have the user, we make an additonal check that the user really is a valid business user (since the session can be up to 24 hours and in that that time a user might have been deactivated or deleted and then we don't want to connect an identity to that user), determines if it's an update or not. If it's an update, i.e. the user has changed one Google identity for an other Google identity, we need to first remove the old entry before adding the new one.
+
+Finally, the user is redirected back to the web application. The web application retrieves the list of userIdentites on the local account user display the button as Disconnect if there already is a connected identity with the same provider name or Connect is there's not. 
 
 
 
-To support the use case we will need an API endpoints supporting the page for where the user can connect their social identites. 
+Mission accomplished!
+
+
+Sources and references:
+https://docs.microsoft.com/en-us/azure/active-directory-b2c/direct-signin
+
+https://docs.microsoft.com/en-us/azure/active-directory-b2c/openid-connect-technical-profile
+
+https://download.microsoft.com/download/F/1/4/F1475A9B-5AD3-4B54-B16D-8B34CD416159/Claims-based%20Identity%20Second%20Edition%20device.pdf
+
+https://github.com/Azure-Samples/active-directory-b2c-advanced-policies 
 
