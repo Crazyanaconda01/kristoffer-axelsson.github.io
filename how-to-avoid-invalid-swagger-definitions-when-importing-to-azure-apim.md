@@ -9,9 +9,15 @@ However, the import does not always work. After having had conversation with Mic
 ## The error
 Let's look at the following error:
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/apim_json_error.png)
+
 Quite cryptic at first glance, but when looking closer at the file you will eventaully see that there duplicate entries of the defintion. This will not be a valid json for import in Azure API Management, rightfully so.
 
 ## The solution
-Swashbuckle sometimes creates duplicate defintions of types, which is a known issue. THe good thing is that it can easily be mitiated by registrering an operation filter to remove duplicates. I solved it like this:
+Swashbuckle sometimes creates duplicate defintions of types, which is a known issue. The good thing is that it can easily be mitiated by registrering an operation filter to remove duplicates. I solved it like this:
 
-If you take a look at the json file after the filter has been applied you will now see that there are no duplicate definitions anymore. The API can now be imported to API Managenemtn without any issues!
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/apim_json_error_duplicate_solution.png)
+
+A simple extension filter where I replace the 
+
+After the filter has been applied you will now see that the json does not have duplicate consume definitions anymore. The API can now be imported to API Managenemtn without any issues! No more headaches!
