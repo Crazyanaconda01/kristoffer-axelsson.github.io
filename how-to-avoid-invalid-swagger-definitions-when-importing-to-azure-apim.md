@@ -18,6 +18,6 @@ Swashbuckle sometimes creates duplicate defintions of types, which is a known is
 
 ![image](https://stgtoffenr1.blob.core.windows.net/$web/github/apim_json_error_duplicate_solution.png)
 
-A simple extension filter where I replace the 
+A simple extension filter where I replace the consumes list with the same but unqiue list, using LINQ's distinct method.
 
-After the filter has been applied you will now see that the json does not have duplicate consume definitions anymore. The API can now be imported to API Managenemtn without any issues! No more headaches!
+After the filter has been applied you will now see that the json does not have duplicate consume definitions anymore. The API can now be imported to API Managenemtn without any issues! Sometimes the most disturbing problems can be the simplest to solve :) No more headaches!
