@@ -30,6 +30,8 @@ To get around the need of having to sign in in the policy (which for the user wo
 2. In the Angular event handlar, we make a retrieve a client_assertion token from the user API.
 3. We construct the linkage policy url using the the set policy name based on environment (it's a multi environment setup), clientId,   redirect uri (simply the current replyUri of the app + the path to the connections page), client_assertion token and the clicked identity provider as the domain_hint (more on this later).
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_ui.png)
+
 ## B2C client assertion token with .Net Core
 One of the most critical components in achieving a seamless experience is to auto sign-in the user, but how can we do this? The solution is not as straight forward as it might seem, but I will explain step-by-step below how I solved it.
 
@@ -37,17 +39,26 @@ Instead of opening or redirecting directly to the url of the custom policy, we w
 
 In the Startup class we will configure it like this:
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2cui_startup1.png)
+
 The first part if relatively basic, we start with configiring what schemas, scopes and an event handler for recieved messages, very straight forward.
+
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2cui_startup2.png)
 
 And further down we have the settings on how the backend handles the redirect of the user navigating to and from the policy. There are a few very important things to note here. The most important setting here is probabably the ClientAssertionType where we basically tell the policy to expect a JWT Bearer token. We take the client assertion token as a parameter when the redirect occurs. (Since the policies are also invoked for inviting and registering new users to the portal, we also have some settings here for the B2C UI customization and registered url).
 
-Now, finally we arrive at our come to the actual API controller method. In the API controller we create a list of claims, the claims we want to include the token and that we will later be able to use within the B2C policy, we give it an expiration of three hours and set the default language. 
+Now, finally we arrive at our come to the actual API controller method. In the API controller we create a list of claims, the claims we want to include the token and that we will later be able to use within the B2C policy, we give it an expiration of three hours and set the default language.
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_link_invoke.png)
 
 But how do we actually create the token? We do that using a namespace called System.IdentityModel.Tokens.Jwt made for creating, serializing and validating JSON Web Tokens. There is an important security aspect here, which is to sign the token using a secret. The token is self issued and we don't want anyone with programmatic know-how to be able to create token in the same we are and invoke the B2C policy, right? That's where the signing comes in. We use a secret that will later use within B2CAAD too in order to validate the token. Other than that, we are basically simply setting each property of the token with the values. Normally the "aud" claim would be the applicationId and the issuer would be the identity provider, but in this case it's not important as we are self-issuing the token. We return a OkObjectResult with the token back to the web application and the web application will now redirect back to the custom policy.
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_link_invoke2.png)
+
 ## Auto-sign in users in B2C custom policies using extracted claims from a JWT Bearer token
 It's in the B2C policy the real magic happens. Let's start with looking at the orchestration steps.
+
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_linkage_custom_policy.png)
 
 The user journey consists of eight steps. Compared to several of the B2C packs out there, some of the most crucal differences here are that:
 1. We do not want to prompt the user to sign in
@@ -60,28 +71,38 @@ A note of warning: B2C policies are for identity experience framework experts an
 
 Let's start with looking at the actual linkage policy.
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_linkage_custom_policy2.png)
+
 In there, there are a few things that are important. First we include the authentication protocol name, <Protocol Name="OpenIdConnect" />, since this is the protocol that B2C expects, without this set B2C would throw an error and we would not be able to access the claims of the token in the policy. The second important setting here is that we specify the token type, JWT. Same thing here, B2C will throw an error here as well if this isn't specified and a JWT token is passed. The third important setting here is the CryptographicKeys. Do you remermber the signing of the token? It should be uploaded in the Identity Experience Framework / Policy Keys blade of the B2C AD tenant. When adding a signture key, it should look like this:
+
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_linkage_custom_policy4.png)
 
 The StorageReferenceId in the custom policy will be the name of the secret you create, plus "B2C_1A" which is a prefix for custom polciies. So if you name it linksecret, the name to enter as the StorageReferenceId will be "B2C_A1_linksecret". This is all that's needed to validate the signature of the token, B2C will handle the rest. The client_secret is a static attribute.
 
 Back to the user journey. Since we now have the decoded JWT token, the email claim is accessible (to see which claims are available and sent between differents steps in user journeys I strongly suggest using the UserJourneyRecorder, debugging without it is can be very daunting) and be used to read the B2C user using AAD-UserReadUsingEmailAddress technical profile if you used the B2C start pack that can be found here. By using the client_assertion approach, we have now managed to retrieve the user within the policy without prompting the user for any action.
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_linkage_custom_policy.png)
+
 In step 2 we verify that the user was found using the email address by veryfing that an objectId exists.
 
-In step 3 the user would normally be forced to select which IDP to connect. But there is way to get around that. In the deep dive documentation I posted previously and on docs.microsoft.com, one can see that B2C supports skipping the ClaimProviderSelection orchestration step if a query parameter is passed named "domain_hint" with a value that matches the Domain attribute of the social identity techical profile that the user is about to connect. For instance, if the you add "&domain_hint=facebook.com" and the value matches the Domain element of the Facebook technical profile, the B2C policy will automatically jump to the ClaimsExchange orchestration step which is where the user is promoted to actually sign in with the social identity account to get a key that can be stored to the userIdentites on the user object. More information about domain_hints and adapative sign in experiences in B2C custom policies can also be found here : 
+In step 3 the user would normally be forced to select which IDP to connect. But there is way to get around that. In the deep dive documentation I posted previously and on docs.microsoft.com, one can see that B2C supports skipping the ClaimProviderSelection orchestration step if a query parameter is passed named "domain_hint" with a value that matches the Domain attribute of the social identity techical profile that the user is about to connect. For instance, if the you add "&domain_hint=facebook.com" and the value matches the Domain element of the Facebook technical profile, the B2C policy will automatically jump to the ClaimsExchange orchestration step which is where the user is promoted to actually sign in with the social identity account to get a key that can be stored to the userIdentites on the user object.
 
 With the client_assertion JWT token with the authenticated user's email address in conjunction with the domain_hint stemming from the web application and matching the Domain element value of technical profile, we have now reached the desired behaviour where the user does not need to sign in twice and does not need to select the IDP again.
 
 ## Adding the social identity to a local account B2C user using Graph
 There is one important step left though. We need to actually update the B2C user identity collection to add the connected social account. This can be done in different ways. Finding proved tricky back in the day, but I eventually found a Word file describing the procedure in a Github repository. The userIdentities collection can be updated by a PATCH request to the Graph API and the example described this using an Azure function. Since we already had the infrastructure setup for ingress of traffic thorugh API Management and services hosted in an AKS cluster with internal Azure load balancers, I did see the need to create a separata Azure function only to do a PATCH request to Graph and settled with simply integratiing this into the user API. (Something to consider here is that the application making the requst, in this case the user API, needs the proper Graph access i.e. read and write directory data. A more in depth look can be found here: https://docs.microsoft.com/en-us/graph/permissions-reference.)
 
-The retrieves the POST body from B2C, deserializes it and retrives the user from Graph based on the objectId of the user.
+The method retrieves the POST body from B2C, deserializes it and retrives the user from Graph based on the objectId of the user.
+
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_add_identity.png)
 
 And when we have the user, we make an additonal check that the user really is a valid business user (since the session can be up to 24 hours and in that that time a user might have been deactivated or deleted and then we don't want to connect an identity to that user), determines if it's an update or not. If it's an update, i.e. the user has changed one Google identity for an other Google identity, we need to first remove the old entry before adding the new one.
 
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_add_identity2.png)
+
 Finally, the user is redirected back to the web application. The web application retrieves the list of userIdentites on the local account user display the button as Disconnect if there already is a connected identity with the same provider name or Connect is there's not. 
 
-
+![image](https://stgtoffenr1.blob.core.windows.net/$web/github/b2c_ui2.png)
 
 Mission accomplished!
 
