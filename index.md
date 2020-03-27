@@ -7,8 +7,4 @@ Posts:<br>
 
 [How to avoid invalid Swagger definitions when importing to Azure APIM](https://kristoffer-axelsson.github.io/how-to-avoid-invalid-swagger-definitions-when-importing-to-azure-apim)
 
-[Implementing an API Gateway pattern using Azure Kubernetes Service and API Management](https://kristoffer-axelsson.github.io/implementing-an-api-gateway-pattern-using-azure-kubernetes-service-and-api-management)
-
-[How to add custom properties in your B2CAAD issued access token using Custom Policies](https://kristoffer-axelsson.github.io/how-to-add-custom-properties-in-your-B2CAAD-issued-access-tokens-using-custom-policies)
-
 [About me](https://kristoffer-axelsson.github.io/about)
