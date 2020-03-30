@@ -20,7 +20,7 @@ The APIs in question are of course versioned, so the OData operations should be 
 (The order is important when adding services to the IServiceCollection in Startup.cs, AddMvc needs to be above the Addition of services.AddOData, otherwise you can get various errors.)
 
 ConfigureServices:
-...
+```
             services.AddMvc();
             services.AddApiVersioning(options => options.ReportApiVersions = true);
             services.AddOData().EnableApiVersioning();
@@ -61,7 +61,7 @@ ConfigureServices:
 
                     options.OperationFilter<PreventDuplicateConsumeFilter>();
                 });
-...
+```
 
 To avoid errors when Swashbuckle tries to generate the API documentation, we need to explicitly specify the OData MIME types as supported media types when adding MvcCore to the IServiceCollection.
 ...
