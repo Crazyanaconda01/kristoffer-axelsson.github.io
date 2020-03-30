@@ -1,9 +1,9 @@
 ## Part 1: Setting up an Odata feed in .Net Core
 
-### Options:
+### Options
 There are a few frameworks available that can be used for this purpose, one of them being RESTier. But after agreeing on a “cloud native Azure centric” approach together with the client, and since we decided to develop the backend with the LTS supported .Net Core 2.1, I felt that a framework published by Microsoft was the preferable way to go if there was nothing talking against it.
 
-### Prerequisites:
+### Prerequisites
 The Odata feeds in the APIs should of course also be versioned, resulting in the following packages being installed to the project. (The versions below are the ones that were used in the .Net Core 2.1 APIs to deliver the expected results. There are some newer versions available but I will post the versions that were actually used as they are the ones that have been tested in the real world scenario.)
 So I added the following NuGet packages into the ASP.NET Core project:
 Install-Package Microsoft.AspNetCore.OData -Version 7.1.0
@@ -14,7 +14,7 @@ In the APIs I also used Swashbuckle to automatically generate Open API compliabl
 However, by default just installing Swashbuckle will not give full support for OData v4 support in OData controllers which was of course needed. Therefore, I also installed this package is also needed to extend Swashbuckle with the necessary OData support.
 Install-Package Swashbuckle.OData -Version 3.5.0
 
-### Setup:
+### Setup
 Since this is a .Net Core project, the services needs to be added and configured.
 The APIs in question are of course versioned, so the OData operations should be too of course. Versioning the OData feeds can be a tricky endeavour, but this great guide by Chris Martinez https://github.com/microsoft/aspnet-api-versioning/wiki/API-Versioning-with-OData helped greatly, making me ending with the following configuration in Startup.cs. Only including code relevant for OData and the versioning of it.
 (The order is important when adding services to the IServiceCollection in Startup.cs, AddMvc needs to be above the Addition of services.AddOData, otherwise you can get various errors.)
@@ -138,7 +138,7 @@ namespace customer.order.API.Extensions
 }
 ...
 
-### EDM:
+### EDM
 OData requires us to declare entities which can be used as OData resources. Since there was the possibility of potentially several EDM models added over time, I decided to apply the model configurations in its own class inheriting from Microsoft.AspNet.Odata.Builder.IModelConfiguration, negating the need completely of having any EDM related code in Startup.cs. (This class also becomes a good place to add additional logic in the future when new API versions are added.)
 I will share the class in its entirety below:
 
@@ -168,7 +168,7 @@ namespace customer.invoice.API.Configuration
 }
 ...
 
-### Odata controller:
+### Odata controller
 At this point in time we are starting to get ready to actually create the OdataController that will serve the OData feed to the consumers.
 
 In our case, we have differentiation between standard business users and internal user in the client company. Logic to check whether a user is internal or not resides in the custom http middleare class that saves the information in the httpContext, thus why the HttpContext is injected into the OdataController constructor. Since this is a microservice architecture I have tried to keep each services as self-contained as possible to the point where I tried to keep every 
@@ -241,7 +241,7 @@ namespace customer.order.API.Controllers.Odata
 }
 ...
 
-### Meta data:
+### Meta data
 The above are the options for the Swagger API documentation generation. Of particular note here is the options.DocumentFilter<AddOdataMetadataEndpointsFilter>(); line. By default Swagger does not include OData meta operations, something that will make us loose valuable time in the long run, and in addition I like the Swagger file to complete list of the operations, definitions, paths etc. of an API. To solve this, an operation filter is needed. In the filter below I construct the meta data operation and applies it to the Swagger documentation so that it's included when downloaded from i.e. from the UI. (In part 2 we will see one of the reasions why it's good to include this.)
 ...
 using Swashbuckle.AspNetCore.Swagger;
@@ -275,6 +275,8 @@ namespace customer.order.API.Extensions.Swagger
     }
 }
 ...
+            
+### Next
 
 This is only the start though. How can you prompt a user to open a feed in i.e. Excel or PowerBi with minimal effort? How can the feed be secured with appropriate authentication with minimal hassle for the user? What needs to be considered when consuming an ODAta feed through Azure API Management? I will cover these topics in the following articles.
  
