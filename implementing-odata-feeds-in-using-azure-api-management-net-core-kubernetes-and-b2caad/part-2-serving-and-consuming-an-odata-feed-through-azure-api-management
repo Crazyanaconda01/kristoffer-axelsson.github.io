@@ -1,0 +1,7 @@
+## Part 2: Serving and consuming an OData feed through Azure API Management
+
+### How to serve the feed?
+Well, now core code up. But the business case here is that the user should be able to download the file through the web application similar to Microsoft and many other services. How can we achieve that? How can we deliver the feed in a way that the user can easily open and consume?
+
+## Odc
+To serve
