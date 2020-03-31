@@ -108,6 +108,7 @@ Mission accomplished!
 
 
 Sources and references:
+
 https://docs.microsoft.com/en-us/azure/active-directory-b2c/direct-signin
 
 https://docs.microsoft.com/en-us/azure/active-directory-b2c/openid-connect-technical-profile
