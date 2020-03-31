@@ -1,0 +1,22 @@
+## Part 3: Securing an OData feed using Azure Active Directory and .Net Core
+One of the most important aspects of any business data is security. In this project, I followed the principle of "cloud native, Azure centric" approach. It's a clear direction, keeping everything in the cloud and as much as possible in Azure to have a unified environment.
+
+However, when it comes to securing OData feeds using cloud based authentication, in many regards in can feel like threading new ground. If building a web application or a .Net Core API, you will almost always have no brainer go-to options depending on what you want to do.
+
+If you are building an Angular SPA, you have MSAL for cloud based authentication. If you are building .Net Core with dependcy injection for achieving IoC, you have the Microsoft.Extensions.DependencyInjection framework (which I always use, following the principle of using Microsoft native soltuions if there's not a very good reason not to, .Net has really come such a long way, it's a true joy to use).
+
+## Securing an OData feed, take one: Azure App Service, OData feeds as its own service
+If using an App Service resource in Azure, you have the ability to configure something called "Easy Authentication" directly in Azure Portal. It's exactly what it sounds like: it's easy. At least to confiure, it's actually not so easy under the hood, more information can be found here https://docs.microsoft.com/en-us/azure/app-service/overview-authentication-authorization And the good thing is that it's compatible with Azure Active Directory. 
+
+You configure the settings for App Service and it will basically secure the entire app, without expections, meaning that all operations and endpints, if hosting an API for instance, will be protected by the the authentication provider that you have configured. If opening up an OData that is hosted as an App Service resources proected AAD, the OData feed will trigger a handshake prompting the user in a fancy pop up window within Excel to sign in with a work- or school account.
+
+This would a sufficient solution for some cases perhaps, but more granularity and customization would be needed. Also, I had suggested to use AKS (Azure Kubernetes Service) in conjunction with Azure APIM for the production scenario to host the services, so there were several reasons why this was not a perfect fit for the use case and the needs within.
+
+## Securing an OData feed, take two: custom PowerBi connector?
+When looking at possible solutions, I briefly investated if perhaps creating a Power Query connector for use in Excel to serve the feed through it was an option. However, after some research, most possiblities lie with PowerBi and not Excel, there are some differences, which means it could be less straight forward than it might seem. (While browsing taking a deeper look at this I found this is a great blog https://blog.crossjoin.co.uk/ about PowerQuery and associated services, that I can highly recommend.)
+
+## Securing an OData feed, take three: using access token
+The last step was to basically use the access token that is already part of the request and use that as part of the odc for the authentication.
+
+Solution:
+
