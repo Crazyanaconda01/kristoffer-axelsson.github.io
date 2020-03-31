@@ -1,4 +1,4 @@
-## Part 2: Serving and consuming an OData feed through Azure API Management
+## Part 2: Generating queryable .odc files for consumeable OData feeds
 
 ### How to serve the feed?
 Well, now core code up. But the business case here is that the user should be able to download the file through the web application similar to Microsoft and many other services. How can we achieve that? How can we deliver the feed in a way that the user can easily open and consume?
@@ -83,13 +83,14 @@ in
 
 This might be hard to read at first glance, but the file is basically a PowerQuery filter and connection with a SQL command type for filtering. The source of the OData feed here is operation of the OData endpoint. Note that this is just the template though, it needs to be modified. We pass in the filter.
 
-## Creating and serving the actual Odata file
+### Creating and serving the actual Odata file
 First we start with the actual API controller and operation, this, like the others, makes a check against the extracted customerId of the incoming access token.
 
 We generate the filename of the odc based on the type of the data (in this case there's two types, Delivery Tickets and Loads) and make a call to a method to actually generate the byte array that will be the file content. (Anyone who has worked with i.e. pdfsharp or similar libraries will be familiar with the overall procedure here)
 
 We then generate the file content. The content is based on the template file content where the PowerQuery section is replaced with the dynamic content.
 
-We now have byte array ready to be served!
+We now have a file ready to be served!
 
-
+### Next
+Generating the odc is great, but some where important steps are left regarding this solution, especially regarding securing OData feeds and serving them through Azure API Management. More regarding this is coming up in Part 3.
