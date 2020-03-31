@@ -19,7 +19,7 @@ Backend saves the mapping of which identity that has been connected<br>
 Backend sends user back to the url of the social account connection page in the web app<br>
 When the user signs in next time, a custom middleware checks which local account the identity was saved for and sets the business user accordingly.
 
-## Web application part 1
+## Web application
 The page where the user can connect their social identites will be a list of the social providers available to the user, in this case Microsoft (live.com), Google (google.com) and Facebook (facebook.com). The names in parantheseis are the provider names that will later be stored in identity collection in the user object in B2C, more on that later.
 
 When the user authenticates in the web application an access token is first issued for the web application itself and then other resources, this is how MSAL handles the sign in procedure. Therefore, when the user navigates to the "Connected" page, where the user can manage the social accounts, we already know that the user is authenticated. If using i.e. the B2C custom policy starter pack, the policy will prompt the user to sign in again. After all, technically we are leaving the web application and navigating to an other domain if the B2C policy is just opened "as is". The user context and authentication that MSAL has saved for us is then lost. How can we get around this?
