@@ -5,8 +5,8 @@ OData is an ISO/IEC approved, OASIS standard REST standard and is intended to be
 
 [Part 1: Setting up an Odata feed in .Net Core](https://kristoffer-axelsson.github.io/implementing-odata-feeds-in-using-azure-api-management-net-core-kubernetes-and-b2caad/part-1-setting-up-an-odata-feed-in-net-core)
 
-Part 2: Serving and consuming an OData feed through Azure API Management
+[Part 2: Generating queryable odc files for consumeable OData feeds](https://kristoffer-axelsson.github.io/implementing-odata-feeds-in-using-azure-api-management-net-core-kubernetes-and-b2caad/part-2-generating-queryable-odc-files-for-consumeable-odata-feeds)
 
-Part 3: Setting up internal authentication (upcoming)
+Part 3: Securing an OData feed using Azure Active Directory and .Net Core
 
-Part 3: Setting up external authentication (upcoming)
+Part 4: Serving and consuming an OData feed through Azure API Management (upcoming)
