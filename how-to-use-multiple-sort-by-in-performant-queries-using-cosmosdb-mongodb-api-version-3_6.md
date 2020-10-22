@@ -10,7 +10,9 @@ Let’s say you want to have a limit in place in order to limit the size of the 
 
 If doing this in i.e. a .Net Core 3.1 application using the MongoDB C#/.NET Driver and a strongly typed LINQ like lambda expression, you would probably write something like this:
 
+...
 var results = _context.Deliveries.Find(filter).SortByDescending(x => x.HomeArrivalActual).ThenByDescending(x => x.HomeArrivalPlanned).Limit(500).ToList();
+...
 
 This query will fail in CosmosDb however, and the CosmosDb server will throw an error.
 
@@ -30,7 +32,9 @@ In Studio 3T, open an IntelliShell window and enter this (depending on collectio
 
 ![image](https://kristofferaxelsson.blob.core.windows.net/$web/github/studio3t_create_cosmos_index.png)
 
+...
 db.getCollection("deliveries").createIndex( { "HomeArrivalActual" : -1, "HomeArrivalPlanned": -1 })
+...
 
 There are a few things to note here. First: as mentioned in the Microsoft docs, don’t forget that the order matters here. The order needs to be the same as in your where/find clause.
 
@@ -38,7 +42,7 @@ Also, note the -1. This means it is a descending index. If you have an expressio
 
 Having executed the above query, you will see in an output window in Studio 3T if the initial index creation succeeded or not, if the amount of indexes changed and increased the change was successful.
 
-###Index rebuild
+### Index rebuild
 The above command will trigger a new index to be built. Depending on your collection size etc., it might take some time. If you try to run the query during this time, you will see an other error message:
 
 ![image](https://kristofferaxelsson.blob.core.windows.net/$web/github/cosmosdb_composite_query2.png)
