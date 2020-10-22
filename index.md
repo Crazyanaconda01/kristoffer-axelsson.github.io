@@ -10,4 +10,7 @@ Posts:<br>
 
 [How to avoid invalid Swagger definitions when importing to Azure APIM](https://kristoffer-axelsson.github.io/how-to-avoid-invalid-swagger-definitions-when-importing-to-azure-apim)
 
+[How to use multiple sort by in performant queries using CosmosDb / MongoDB API version 3.6](https://kristoffer-axelsson.github.io/how-to-use-multiple-sort-by-in-performant-queries-using-cosmosdb-mongodb-api-version-3_6)
+
+
 [About me](https://kristoffer-axelsson.github.io/about)
